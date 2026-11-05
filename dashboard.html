@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>CloudBrew Coffee Co. — Executive Dashboard H1 2026</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg:       #0d0f14;
+    --surface:  #161922;
+    --card:     #1e2330;
+    --border:   #2a3148;
+    --accent:   #c8853a;
+    --accent2:  #e8a84d;
+    --green:    #3ecf8e;
+    --red:      #f05252;
+    --yellow:   #f6c94e;
+    --blue:     #4f8ef7;
+    --purple:   #9b72f5;
+    --text:     #e8eaf0;
+    --muted:    #7a8199;
+    --font:     'Segoe UI', system-ui, -apple-system, sans-serif;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font);
+    font-size: 14px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* ── Header ── */
+  header {
+    background: linear-gradient(135deg, #1a1022 0%, #0d1520 60%, #0d1a14 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 20px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(10px);
+  }
+  .header-left { display: flex; align-items: center; gap: 14px; }
+  .logo {
+    width: 44px; height: 44px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+  }
+  .header-title h1 { font-size: 18px; font-weight: 700; color: var(--text); }
+  .header-title p  { font-size: 12px; color: var(--muted); margin-top: 1px; }
+  .header-badge {
+    background: rgba(200,133,58,.15);
+    color: var(--accent2);
+    border: 1px solid rgba(200,133,58,.3);
+    padding: 5px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: .4px;
+  }
+
+  /* ── Layout ── */
+  .page { max-width: 1440px; margin: 0 auto; padding: 28px 32px 48px; }
+
+  /* ── Section titles ── */
+  .section-title {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--muted);
+    margin: 36px 0 16px;
+    padding-left: 10px;
+    border-left: 3px solid var(--accent);
+  }
+
+  /* ── Grid ── */
+  .grid { display: grid; gap: 16px; }
+  .g-4 { grid-template-columns: repeat(4, 1fr); }
+  .g-3 { grid-template-columns: repeat(3, 1fr); }
+  .g-2 { grid-template-columns: 1fr 1fr; }
+  .g-2-1 { grid-template-columns: 2fr 1fr; }
+  .g-1-2 { grid-template-columns: 1fr 2fr; }
+  .g-3-2 { grid-template-columns: 3fr 2fr; }
+
+  /* ── Card ── */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px 22px;
+    transition: border-color .2s;
+  }
+  .card:hover { border-color: rgba(200,133,58,.35); }
+  .card-title {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--muted);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .card-title span { font-size: 14px; }
+
+  /* ── KPI ── */
+  .kpi-value {
+    font-size: 32px;
+    font-weight: 800;
+    color: var(--text);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .kpi-value.accent { color: var(--accent2); }
+  .kpi-value.green  { color: var(--green); }
+  .kpi-value.blue   { color: var(--blue); }
+  .kpi-value.purple { color: var(--purple); }
+  .kpi-sub {
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .kpi-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 8px;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 9px;
+    border-radius: 20px;
+  }
+  .badge-up   { background: rgba(62,207,142,.12); color: var(--green); }
+  .badge-down { background: rgba(240,82,82,.12);  color: var(--red); }
+  .badge-warn { background: rgba(246,201,78,.12); color: var(--yellow); }
+
+  /* ── Chart wrapper ── */
+  .chart-wrap { position: relative; width: 100%; }
+  .chart-wrap canvas { width: 100% !important; }
+
+  /* ── Table ── */
+  table { width: 100%; border-collapse: collapse; }
+  thead th {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .8px;
+    color: var(--muted);
+    padding: 6px 10px;
+    border-bottom: 1px solid var(--border);
+    text-align: left;
+  }
+  tbody tr { border-bottom: 1px solid rgba(255,255,255,.04); transition: background .15s; }
+  tbody tr:hover { background: rgba(255,255,255,.03); }
+  tbody td { padding: 9px 10px; font-size: 13px; }
+  .td-right { text-align: right; }
+  .td-mono  { font-family: 'Courier New', monospace; }
+
+  /* ── Pill badges ── */
+  .pill {
+    display: inline-block;
+    padding: 2px 9px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .pill-green  { background: rgba(62,207,142,.15); color: var(--green); }
+  .pill-red    { background: rgba(240,82,82,.15);  color: var(--red); }
+  .pill-yellow { background: rgba(246,201,78,.15); color: var(--yellow); }
+  .pill-blue   { background: rgba(79,142,247,.15); color: var(--blue); }
+  .pill-purple { background: rgba(155,114,245,.15);color: var(--purple); }
+  .pill-orange { background: rgba(200,133,58,.15); color: var(--accent2); }
+
+  /* ── Bar (horizontal inline) ── */
+  .bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .bar-label { width: 140px; font-size: 12px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex-shrink: 0; }
+  .bar-track { flex: 1; height: 7px; background: rgba(255,255,255,.07); border-radius: 4px; overflow: hidden; }
+  .bar-fill  { height: 100%; border-radius: 4px; transition: width .6s ease; }
+  .bar-val   { width: 70px; text-align: right; font-size: 12px; color: var(--muted); flex-shrink: 0; }
+
+  /* ── Red flags ── */
+  .flag-list { display: flex; flex-direction: column; gap: 10px; }
+  .flag {
+    display: flex;
+    gap: 14px;
+    padding: 14px 16px;
+    border-radius: 10px;
+    background: rgba(255,255,255,.03);
+    border-left: 3px solid var(--red);
+    align-items: flex-start;
+  }
+  .flag.warn { border-left-color: var(--yellow); }
+  .flag.info { border-left-color: var(--blue); }
+  .flag-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+  .flag-body { flex: 1; }
+  .flag-title { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 3px; }
+  .flag-desc  { font-size: 12px; color: var(--muted); line-height: 1.5; }
+
+  /* ── Donut legend ── */
+  .donut-legend { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+  .legend-item { display: flex; align-items: center; gap: 10px; font-size: 12px; }
+  .legend-dot  { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .legend-name { flex: 1; color: var(--text); }
+  .legend-val  { color: var(--muted); font-size: 11px; }
+
+  /* ── Traffic source row ── */
+  .source-row { display: flex; justify-content: space-between; align-items: center; padding: 7px 0; border-bottom: 1px solid rgba(255,255,255,.04); }
+  .source-row:last-child { border-bottom: none; }
+  .source-name { font-size: 13px; }
+  .source-pct  { font-size: 13px; font-weight: 600; color: var(--accent2); }
+
+  /* ── Responsive ── */
+  @media (max-width: 1100px) {
+    .g-4 { grid-template-columns: repeat(2, 1fr); }
+    .g-3 { grid-template-columns: repeat(2, 1fr); }
+    .g-2-1, .g-1-2, .g-3-2 { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 700px) {
+    .g-4, .g-3, .g-2 { grid-template-columns: 1fr; }
+    .page { padding: 16px; }
+    header { padding: 14px 16px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ══════════════ HEADER ══════════════ -->
+<header>
+  <div class="header-left">
+    <div class="logo">☕</div>
+    <div class="header-title">
+      <h1>CloudBrew Coffee Co.</h1>
+      <p>Executive Performance Dashboard · H1 2026 · Series B Due-Diligence Audit</p>
+    </div>
+  </div>
+  <div class="header-badge">📅 Jan – Jun 2026</div>
+</header>
+
+<div class="page">
+
+  <!-- ══ SECTION: EXECUTIVE FINDINGS ══ -->
+  <div class="section-title">🚨 Executive Findings & Red Flags</div>
+  <div class="card">
+    <div class="flag-list">
+      <div class="flag">
+        <div class="flag-icon">🔴</div>
+        <div class="flag-body">
+          <div class="flag-title">Pune Bulk-Order Anomaly — CUST1499</div>
+          <div class="flag-desc">Single customer drove 56 transactions &amp; ₹1,90,032 revenue — <strong>39.9% of Pune's total H1 revenue</strong>. Bulk quantities (up to 25 units/order) suggest unregistered reseller or fraud. Rajesh investigating.</div>
+        </div>
+      </div>
+      <div class="flag">
+        <div class="flag-icon">🔴</div>
+        <div class="flag-body">
+          <div class="flag-title">Hyderabad Inventory Crisis — 100% of Critical Stockouts</div>
+          <div class="flag-desc">All <strong>77 Critical stock events</strong> in H1 are concentrated at a single store. Ethiopian Yirgacheffe and Limited Edition Geisha have been Critical since Week 1. Root cause: overdue payments to Karnataka Coffee Estates.</div>
+        </div>
+      </div>
+      <div class="flag warn">
+        <div class="flag-icon">🟡</div>
+        <div class="flag-body">
+          <div class="flag-title">Marketing Budget Destruction — ₹3.36L Wasted</div>
+          <div class="flag-desc"><strong>Podcast Sponsorship:</strong> ₹1,75,000 spend → 2 conversions, −99.4% ROI. <strong>Influencer Collab May:</strong> ₹1,60,810 → 26 conversions, −81.6% ROI. Meanwhile Email Newsletter Q1 earned 7,590% ROI on ₹29,550.</div>
+        </div>
+      </div>
+      <div class="flag warn">
+        <div class="flag-icon">🟡</div>
+        <div class="flag-body">
+          <div class="flag-title">HR Payroll Anomaly — Content Creator at ₹1,85,000/mo</div>
+          <div class="flag-desc">EMP122 Karthik Kumar (Content Creator, Marketing) earns <strong>₹1,85,000/month</strong> — more than every Regional Manager and Finance Manager. Likely data entry error or undisclosed role elevation. Immediate HR investigation required.</div>
+        </div>
+      </div>
+      <div class="flag warn">
+        <div class="flag-icon">🟡</div>
+        <div class="flag-body">
+          <div class="flag-title">Delhi Store Viability — 40% Footfall Drop</div>
+          <div class="flag-desc">Only <strong>78 orders</strong> and ₹89,423 revenue in 6 months — lowest of all stores. Ticket-to-order ratio of 37% vs 9% for Bangalore. Metro construction is destroying footfall. Lease renewal due September 2026.</div>
+        </div>
+      </div>
+      <div class="flag info">
+        <div class="flag-icon">🔵</div>
+        <div class="flag-body">
+          <div class="flag-title">Supplier Delinquency &amp; Logistics Cost Explosion</div>
+          <div class="flag-desc">₹51L in overdue invoices across 15 suppliers. <strong>LogiExpress India</strong> billed ₹54.5L for logistics alone — costs up from 11% to 18% of COGS. Alternative logistics partners must be onboarded urgently.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SECTION: KPIs ══ -->
+  <div class="section-title">📊 Key Performance Indicators</div>
+  <div class="grid g-4">
+    <div class="card">
+      <div class="card-title"><span>💰</span> Total Revenue H1</div>
+      <div class="kpi-value accent">₹15.6L</div>
+      <div class="kpi-sub">₹15,64,616 across 1,096 transactions</div>
+      <div class="kpi-badge badge-up">↑ 18% QoQ organic growth</div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span>🛒</span> Avg Order Value</div>
+      <div class="kpi-value green">₹1,428</div>
+      <div class="kpi-sub">Across all channels &amp; stores</div>
+      <div class="kpi-badge badge-up">Friday AOV: ₹1,884</div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span>⭐</span> NPS Score</div>
+      <div class="kpi-value blue">58</div>
+      <div class="kpi-sub">Improved from 42 in Q1</div>
+      <div class="kpi-badge badge-up">↑ +16 pts QoQ</div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span>🎫</span> Support Tickets</div>
+      <div class="kpi-value purple">220</div>
+      <div class="kpi-sub">Avg resolution: 44.5 hrs · Sat: 3.75/5</div>
+      <div class="kpi-badge badge-warn">74 unresolved</div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span>🏪</span> Active Stores</div>
+      <div class="kpi-value accent">6</div>
+      <div class="kpi-sub">Across India's major metros</div>
+      <div class="kpi-badge badge-down">Delhi at risk</div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span>📦</span> Total Orders</div>
+      <div class="kpi-value green">1,096</div>
+      <div class="kpi-sub">Online 44.6% · In-Store 31% · App 24.4%</div>
+      <div class="kpi-badge badge-up">UPI 38% · Card 34%</div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span>🌐</span> Web Visitors H1</div>
+      <div class="kpi-value blue">2.95L</div>
+      <div class="kpi-sub">Total unique visitors across 6 months</div>
+      <div class="kpi-badge badge-up">↑ 40% over period</div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span>👥</span> Headcount</div>
+      <div class="kpi-value purple">41</div>
+      <div class="kpi-sub">Active employees · ₹43.2L/mo payroll</div>
+      <div class="kpi-badge badge-warn">3 Sales resigned H1</div>
+    </div>
+  </div>
+
+  <!-- ══ SECTION: REVENUE CHARTS ══ -->
+  <div class="section-title">📈 Revenue Analysis</div>
+  <div class="grid g-2">
+    <!-- Monthly Revenue -->
+    <div class="card">
+      <div class="card-title"><span>📅</span> Monthly Revenue Trend (₹)</div>
+      <div class="chart-wrap" style="height:260px">
+        <canvas id="monthlyRevChart"></canvas>
+      </div>
+    </div>
+    <!-- Store Revenue -->
+    <div class="card">
+      <div class="card-title"><span>🏪</span> Revenue by Store (₹)</div>
+      <div class="chart-wrap" style="height:260px">
+        <canvas id="storeRevChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid g-2" style="margin-top:16px">
+    <!-- Category donut -->
+    <div class="card">
+      <div class="card-title"><span>🍩</span> Revenue by Category</div>
+      <div style="display:flex; gap:20px; align-items:center; flex-wrap:wrap;">
+        <div class="chart-wrap" style="height:220px; width:220px; flex-shrink:0;">
+          <canvas id="catDonut"></canvas>
+        </div>
+        <div class="donut-legend" style="flex:1; min-width:150px;">
+          <div class="legend-item"><div class="legend-dot" style="background:#c8853a"></div><span class="legend-name">Single Origin</span><span class="legend-val">₹4,97,497</span></div>
+          <div class="legend-item"><div class="legend-dot" style="background:#4f8ef7"></div><span class="legend-name">Equipment</span><span class="legend-val">₹2,88,356</span></div>
+          <div class="legend-item"><div class="legend-dot" style="background:#3ecf8e"></div><span class="legend-name">Subscription</span><span class="legend-val">₹2,59,852</span></div>
+          <div class="legend-item"><div class="legend-dot" style="background:#9b72f5"></div><span class="legend-name">Blend</span><span class="legend-val">₹1,77,593</span></div>
+          <div class="legend-item"><div class="legend-dot" style="background:#f6c94e"></div><span class="legend-name">Ready-to-Drink</span><span class="legend-val">₹1,70,779</span></div>
+          <div class="legend-item"><div class="legend-dot" style="background:#f05252"></div><span class="legend-name">Others</span><span class="legend-val">₹70,540</span></div>
+        </div>
+      </div>
+    </div>
+    <!-- Day of week -->
+    <div class="card">
+      <div class="card-title"><span>📆</span> Revenue by Day of Week (₹)</div>
+      <div class="chart-wrap" style="height:220px">
+        <canvas id="dowChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SECTION: PRODUCTS ══ -->
+  <div class="section-title">☕ Product Performance</div>
+  <div class="grid g-3-2">
+    <!-- Top products table -->
+    <div class="card">
+      <div class="card-title"><span>🏆</span> Top Products by Revenue</div>
+      <table>
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th class="td-right">Revenue</th>
+            <th class="td-right">Units</th>
+            <th class="td-right">Margin</th>
+            <th class="td-right">Rating</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>☕ Coffee Subscription Box</td><td class="td-right td-mono">₹2,59,852</td><td class="td-right">187</td><td class="td-right"><span class="pill pill-yellow">48.2%</span></td><td class="td-right">4.7</td></tr>
+          <tr><td>✨ Limited Edition Geisha</td><td class="td-right td-mono">₹2,45,826</td><td class="td-right">133</td><td class="td-right"><span class="pill pill-green">78.3%</span></td><td class="td-right">4.9</td></tr>
+          <tr><td>🫖 French Press Bundle</td><td class="td-right td-mono">₹1,79,262</td><td class="td-right">143</td><td class="td-right"><span class="pill pill-red">32.5%</span></td><td class="td-right">4.4</td></tr>
+          <tr><td>🌍 Ethiopian Yirgacheffe</td><td class="td-right td-mono">₹1,34,925</td><td class="td-right">242</td><td class="td-right"><span class="pill pill-green">62.0%</span></td><td class="td-right">4.6</td></tr>
+          <tr><td>🍵 Pour Over Kit</td><td class="td-right td-mono">₹1,09,094</td><td class="td-right">129</td><td class="td-right"><span class="pill pill-red">28.9%</span></td><td class="td-right">4.6</td></tr>
+          <tr><td>🧊 Cold Brew Concentrate</td><td class="td-right td-mono">₹87,438</td><td class="td-right">305</td><td class="td-right"><span class="pill pill-green">71.6%</span></td><td class="td-right">4.8</td></tr>
+          <tr><td>🇨🇴 Colombian Supremo</td><td class="td-right td-mono">₹84,547</td><td class="td-right">158</td><td class="td-right"><span class="pill pill-yellow">58.5%</span></td><td class="td-right">4.4</td></tr>
+          <tr><td>💊 Espresso Capsules</td><td class="td-right td-mono">₹53,087</td><td class="td-right">140</td><td class="td-right"><span class="pill pill-green">68.4%</span></td><td class="td-right">4.1</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <!-- Margin chart -->
+    <div class="card">
+      <div class="card-title"><span>📊</span> Product Margin % (All SKUs)</div>
+      <div class="chart-wrap" style="height:310px">
+        <canvas id="marginChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SECTION: MARKETING ══ -->
+  <div class="section-title">📣 Marketing Campaign Performance</div>
+  <div class="grid g-2">
+    <div class="card">
+      <div class="card-title"><span>💹</span> Campaign ROI % (Top &amp; Bottom)</div>
+      <div class="chart-wrap" style="height:300px">
+        <canvas id="roiChart"></canvas>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span>💸</span> Spend vs Revenue Generated (₹)</div>
+      <div class="chart-wrap" style="height:300px">
+        <canvas id="mktSpendChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top:16px">
+    <div class="card">
+      <div class="card-title"><span>📋</span> All Campaigns Summary</div>
+      <table>
+        <thead>
+          <tr><th>Campaign</th><th>Platform</th><th class="td-right">Spend (₹)</th><th class="td-right">Revenue (₹)</th><th class="td-right">ROI %</th><th class="td-right">Conversions</th><th>Status</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Email Newsletter Q1</td><td>LinkedIn</td><td class="td-right td-mono">29,550</td><td class="td-right td-mono">22,72,494</td><td class="td-right"><strong style="color:var(--green)">7,590%</strong></td><td class="td-right">2,562</td><td><span class="pill pill-green">Best</span></td></tr>
+          <tr><td>College Campus Drive</td><td>Instagram</td><td class="td-right td-mono">36,568</td><td class="td-right td-mono">27,40,335</td><td class="td-right"><strong style="color:var(--green)">7,394%</strong></td><td class="td-right">3,055</td><td><span class="pill pill-green">Best</span></td></tr>
+          <tr><td>WhatsApp Broadcast</td><td>Offline</td><td class="td-right td-mono">54,955</td><td class="td-right td-mono">19,53,160</td><td class="td-right">3,454%</td><td class="td-right">2,024</td><td><span class="pill pill-green">Top</span></td></tr>
+          <tr><td>YouTube Review Sponsorship</td><td>WhatsApp</td><td class="td-right td-mono">40,537</td><td class="td-right td-mono">11,75,652</td><td class="td-right">2,800%</td><td class="td-right">1,017</td><td><span class="pill pill-green">Top</span></td></tr>
+          <tr><td>New Year Coffee Fest</td><td>Offline</td><td class="td-right td-mono">1,70,850</td><td class="td-right td-mono">31,35,132</td><td class="td-right">1,735%</td><td class="td-right">2,639</td><td><span class="pill pill-green">Top</span></td></tr>
+          <tr><td>Monsoon Malabar Launch</td><td>WhatsApp</td><td class="td-right td-mono">59,912</td><td class="td-right td-mono">10,68,315</td><td class="td-right">1,683%</td><td class="td-right">1,005</td><td><span class="pill pill-blue">Good</span></td></tr>
+          <tr><td>Referral Program Boost</td><td>WhatsApp</td><td class="td-right td-mono">85,006</td><td class="td-right td-mono">11,00,000</td><td class="td-right">1,194%</td><td class="td-right">1,760</td><td><span class="pill pill-blue">Good</span></td></tr>
+          <tr><td>Instagram Reels Push</td><td>WhatsApp</td><td class="td-right td-mono">96,243</td><td class="td-right td-mono">6,59,869</td><td class="td-right">586%</td><td class="td-right">881</td><td><span class="pill pill-blue">Good</span></td></tr>
+          <tr><td>Summer Cold Brew Blast</td><td>WhatsApp</td><td class="td-right td-mono">1,10,354</td><td class="td-right td-mono">5,12,304</td><td class="td-right">364%</td><td class="td-right">624</td><td><span class="pill pill-yellow">OK</span></td></tr>
+          <tr><td>Valentine's Gift Packs</td><td>YouTube</td><td class="td-right td-mono">1,33,505</td><td class="td-right td-mono">4,07,362</td><td class="td-right">205%</td><td class="td-right">706</td><td><span class="pill pill-yellow">OK</span></td></tr>
+          <tr><td>Influencer Collab - Feb</td><td>LinkedIn</td><td class="td-right td-mono">36,557</td><td class="td-right td-mono">1,03,240</td><td class="td-right">182%</td><td class="td-right">89</td><td><span class="pill pill-yellow">Weak</span></td></tr>
+          <tr><td>Influencer Collab - May</td><td>Instagram</td><td class="td-right td-mono">1,60,810</td><td class="td-right td-mono">29,536</td><td class="td-right"><strong style="color:var(--red)">−81.6%</strong></td><td class="td-right">26</td><td><span class="pill pill-red">Failed</span></td></tr>
+          <tr><td>Podcast Sponsorship</td><td>Instagram</td><td class="td-right td-mono">1,75,000</td><td class="td-right td-mono">1,100</td><td class="td-right"><strong style="color:var(--red)">−99.4%</strong></td><td class="td-right">2</td><td><span class="pill pill-red">Failed</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ══ SECTION: STORES & SUPPORT ══ -->
+  <div class="section-title">🏪 Store Performance &amp; Support</div>
+  <div class="grid g-2">
+    <div class="card">
+      <div class="card-title"><span>📍</span> Store Revenue Breakdown</div>
+      <div class="bar-row">
+        <div class="bar-label">Pune-Viman</div>
+        <div class="bar-track"><div class="bar-fill" style="width:100%;background:var(--accent)"></div></div>
+        <div class="bar-val">₹4,76,691</div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">Bangalore-Kora.</div>
+        <div class="bar-track"><div class="bar-fill" style="width:65%;background:var(--green)"></div></div>
+        <div class="bar-val">₹3,11,593</div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">Mumbai-Bandra</div>
+        <div class="bar-track"><div class="bar-fill" style="width:54%;background:var(--blue)"></div></div>
+        <div class="bar-val">₹2,58,578</div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">Hyderabad-HiTec</div>
+        <div class="bar-track"><div class="bar-fill" style="width:52%;background:var(--purple)"></div></div>
+        <div class="bar-val">₹2,48,946</div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">Chennai-T.Nagar</div>
+        <div class="bar-track"><div class="bar-fill" style="width:38%;background:var(--yellow)"></div></div>
+        <div class="bar-val">₹1,79,385</div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">Delhi-Connaught</div>
+        <div class="bar-track"><div class="bar-fill" style="width:19%;background:var(--red)"></div></div>
+        <div class="bar-val">₹89,423</div>
+      </div>
+      <div style="margin-top:14px; padding:12px; background:rgba(240,82,82,.08); border-radius:8px; border-left:3px solid var(--red); font-size:12px; color:var(--muted);">
+        ⚠️ <strong style="color:var(--red)">Pune anomaly:</strong> CUST1499 = 39.9% of Pune revenue. <strong style="color:var(--red)">Delhi:</strong> Only 78 orders in H1 — lease renewal due Sep 2026.
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span>🎫</span> Support Ticket Breakdown</div>
+      <div class="chart-wrap" style="height:200px">
+        <canvas id="ticketChart"></canvas>
+      </div>
+      <div style="margin-top:14px;">
+        <div class="source-row"><span class="source-name">🔴 Delivery Delay</span><span class="source-pct">42 tickets</span></div>
+        <div class="source-row"><span class="source-name">🟡 Refund Request</span><span class="source-pct">41 tickets</span></div>
+        <div class="source-row"><span class="source-name">🟠 Payment Failed</span><span class="source-pct">30 tickets</span></div>
+        <div class="source-row"><span class="source-name">🔵 Quality Issue</span><span class="source-pct">29 tickets</span></div>
+        <div class="source-row"><span class="source-name">⚪ Subscription Cancel</span><span class="source-pct">22 tickets</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SECTION: WEBSITE & INVENTORY ══ -->
+  <div class="section-title">🌐 Digital Performance &amp; Inventory Health</div>
+  <div class="grid g-2">
+    <div class="card">
+      <div class="card-title"><span>📈</span> Monthly Website Sessions &amp; Conversion Rate</div>
+      <div class="chart-wrap" style="height:240px">
+        <canvas id="trafficChart"></canvas>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span>📦</span> Inventory Stock Status</div>
+      <div style="margin-bottom:14px; padding:14px; background:rgba(240,82,82,.08); border-radius:8px; border:1px solid rgba(240,82,82,.2); text-align:center;">
+        <div style="font-size:28px; font-weight:800; color:var(--red);">77</div>
+        <div style="font-size:12px; color:var(--muted); margin-top:2px;">Critical Stock Events — ALL at Hyderabad-HiTec</div>
+      </div>
+      <div style="font-size:12px; color:var(--muted); margin-bottom:12px;">Products most affected at Hyderabad:</div>
+      <div class="bar-row">
+        <div class="bar-label">Ethiopian Yirgach.</div>
+        <div class="bar-track"><div class="bar-fill" style="width:100%;background:var(--red)"></div></div>
+        <div class="bar-val">Critical W1</div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">Limited Ed. Geisha</div>
+        <div class="bar-track"><div class="bar-fill" style="width:100%;background:var(--red)"></div></div>
+        <div class="bar-val">Critical W1</div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">Colombian Supremo</div>
+        <div class="bar-track"><div class="bar-fill" style="width:90%;background:var(--yellow)"></div></div>
+        <div class="bar-val">Critical W2</div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">Monsoon Malabar</div>
+        <div class="bar-track"><div class="bar-fill" style="width:90%;background:var(--yellow)"></div></div>
+        <div class="bar-val">Critical W2</div>
+      </div>
+      <div style="margin-top:12px; font-size:12px; color:var(--muted); padding:10px; background:rgba(255,255,255,.03); border-radius:8px;">
+        Root cause: ₹51L overdue payments to Karnataka Coffee Estates are blocking replenishment. Clearing INV5003, INV5016, INV5066 is the fastest fix.
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SECTION: HR ══ -->
+  <div class="section-title">👥 HR &amp; Payroll Highlights</div>
+  <div class="grid g-3">
+    <div class="card">
+      <div class="card-title"><span>💼</span> Dept Headcount &amp; Avg Salary</div>
+      <table>
+        <thead><tr><th>Dept</th><th class="td-right">Staff</th><th class="td-right">Avg Salary/mo</th></tr></thead>
+        <tbody>
+          <tr><td>Engineering</td><td class="td-right">9</td><td class="td-right td-mono">₹1,47,941</td></tr>
+          <tr><td>Product</td><td class="td-right">2</td><td class="td-right td-mono">₹1,22,114</td></tr>
+          <tr><td>Finance</td><td class="td-right">4</td><td class="td-right td-mono">₹1,13,404</td></tr>
+          <tr><td>Marketing</td><td class="td-right">7</td><td class="td-right td-mono">₹1,09,158</td></tr>
+          <tr><td>HR</td><td class="td-right">3</td><td class="td-right td-mono">₹90,048</td></tr>
+          <tr><td>Sales</td><td class="td-right">7</td><td class="td-right td-mono">₹83,609</td></tr>
+          <tr><td>Operations</td><td class="td-right">9</td><td class="td-right td-mono">₹74,740</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="card">
+      <div class="card-title"><span>⚠️</span> Salary Anomalies</div>
+      <div style="padding:12px; background:rgba(240,82,82,.08); border-radius:8px; border-left:3px solid var(--red); margin-bottom:10px;">
+        <div style="font-size:13px; font-weight:700; color:var(--text);">EMP122 — Karthik Kumar</div>
+        <div style="font-size:12px; color:var(--muted);">Content Creator, Marketing</div>
+        <div style="font-size:22px; font-weight:800; color:var(--red); margin:4px 0;">₹1,85,000/mo</div>
+        <div style="font-size:11px; color:var(--muted);">Higher than every Regional Manager · HR investigation required</div>
+      </div>
+      <div style="font-size:12px; color:var(--muted); padding:10px; background:rgba(62,207,142,.06); border-radius:8px; border-left:3px solid var(--green);">
+        <strong style="color:var(--green);">EMP107 — Rahul Rao</strong><br/>
+        Regional Manager · Rating 4.3 · Only ₹46,262/mo<br/>
+        <span style="color:var(--red);">Critical retention risk</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span>📊</span> Dept Salary Distribution</div>
+      <div class="chart-wrap" style="height:220px">
+        <canvas id="salaryChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SECTION: SUPPLIERS ══ -->
+  <div class="section-title">🚚 Supplier &amp; AP Health</div>
+  <div class="grid g-2">
+    <div class="card">
+      <div class="card-title"><span>📑</span> Invoice Payment Status</div>
+      <div class="chart-wrap" style="height:220px">
+        <canvas id="invoiceDonut"></canvas>
+      </div>
+      <div style="display:flex; gap:16px; margin-top:14px; flex-wrap:wrap;">
+        <div style="flex:1; min-width:100px; padding:10px; background:rgba(62,207,142,.08); border-radius:8px; text-align:center;">
+          <div style="font-size:18px; font-weight:700; color:var(--green);">₹2.07 Cr</div>
+          <div style="font-size:11px; color:var(--muted);">Paid (62 invoices)</div>
+        </div>
+        <div style="flex:1; min-width:100px; padding:10px; background:rgba(246,201,78,.08); border-radius:8px; text-align:center;">
+          <div style="font-size:18px; font-weight:700; color:var(--yellow);">₹57.8L</div>
+          <div style="font-size:11px; color:var(--muted);">Pending (18 inv.)</div>
+        </div>
+        <div style="flex:1; min-width:100px; padding:10px; background:rgba(240,82,82,.08); border-radius:8px; text-align:center;">
+          <div style="font-size:18px; font-weight:700; color:var(--red);">₹51L</div>
+          <div style="font-size:11px; color:var(--muted);">Overdue (15 inv.)</div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span>🏭</span> Top Overdue Invoices</div>
+      <table>
+        <thead><tr><th>Supplier</th><th>Due Date</th><th class="td-right">Amount (₹)</th></tr></thead>
+        <tbody>
+          <tr><td>LogiExpress India</td><td>2026-06-04</td><td class="td-right td-mono"><strong style="color:var(--red)">5,98,960</strong></td></tr>
+          <tr><td>Karnataka Coffee Estates</td><td>2026-03-20</td><td class="td-right td-mono">5,73,470</td></tr>
+          <tr><td>Nilgiri Green Farms</td><td>2026-06-08</td><td class="td-right td-mono">5,68,992</td></tr>
+          <tr><td>BrewMasters Intl</td><td>2026-04-11</td><td class="td-right td-mono">4,90,559</td></tr>
+          <tr><td>EcoPack Green</td><td>2026-02-04</td><td class="td-right td-mono">4,64,651</td></tr>
+          <tr><td>PackRight Solutions</td><td>2026-04-12</td><td class="td-right td-mono">4,54,265</td></tr>
+          <tr><td>Karnataka Coffee Estates</td><td>2026-06-22</td><td class="td-right td-mono">4,12,345</td></tr>
+        </tbody>
+      </table>
+      <div style="margin-top:12px; font-size:12px; color:var(--muted); padding:10px; background:rgba(240,82,82,.06); border-radius:8px;">
+        ⚠️ INV5066 (Karnataka Coffee Estates) overdue since March 20 — directly causing Hyderabad stockouts. Priority: pay immediately.
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ FOOTER ══ -->
+  <div style="margin-top:40px; padding:20px; border-top:1px solid var(--border); text-align:center; color:var(--muted); font-size:12px;">
+    CloudBrew Coffee Co. · Executive Dashboard H1 2026 · Series B Due-Diligence Audit<br/>
+    Generated via SAP Joule Work Desktop · All data synthetic for training purposes · November 2026
+  </div>
+
+</div><!-- /.page -->
+
+<!-- ══════════════════════ CHARTS JS ══════════════════════ -->
+<script>
+const ACCENT  = '#c8853a';
+const ACCENT2 = '#e8a84d';
+const GREEN   = '#3ecf8e';
+const BLUE    = '#4f8ef7';
+const RED     = '#f05252';
+const YELLOW  = '#f6c94e';
+const PURPLE  = '#9b72f5';
+const MUTED   = '#7a8199';
+const GRID    = 'rgba(255,255,255,0.06)';
+
+Chart.defaults.color = MUTED;
+Chart.defaults.font.family = "'Segoe UI', system-ui, sans-serif";
+Chart.defaults.font.size   = 12;
+
+const tooltipDefaults = {
+  backgroundColor: '#1e2330',
+  borderColor: '#2a3148',
+  borderWidth: 1,
+  padding: 12,
+  cornerRadius: 8,
+  titleColor: '#e8eaf0',
+  bodyColor: MUTED,
+};
+
+// ── Monthly Revenue ──────────────────────────────────────
+new Chart(document.getElementById('monthlyRevChart'), {
+  type: 'line',
+  data: {
+    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+    datasets: [{
+      label: 'Revenue (₹)',
+      data: [208291, 191057, 511317, 176248, 251430, 226273],
+      borderColor: ACCENT,
+      backgroundColor: 'rgba(200,133,58,0.12)',
+      borderWidth: 2.5,
+      fill: true,
+      tension: 0.4,
+      pointBackgroundColor: ACCENT,
+      pointRadius: 5,
+      pointHoverRadius: 7,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: { ...tooltipDefaults, callbacks: { label: ctx => ' ₹' + ctx.parsed.y.toLocaleString('en-IN') } }
+    },
+    scales: {
+      x: { grid: { color: GRID }, ticks: { color: MUTED } },
+      y: { grid: { color: GRID }, ticks: { color: MUTED, callback: v => '₹' + (v/1000).toFixed(0) + 'k' } }
+    }
+  }
+});
+
+// ── Store Revenue Bar ────────────────────────────────────
+new Chart(document.getElementById('storeRevChart'), {
+  type: 'bar',
+  data: {
+    labels: ['Pune', 'Bangalore', 'Mumbai', 'Hyderabad', 'Chennai', 'Delhi'],
+    datasets: [{
+      label: 'Revenue (₹)',
+      data: [476691, 311593, 258578, 248946, 179385, 89423],
+      backgroundColor: [ACCENT, GREEN, BLUE, PURPLE, YELLOW, RED],
+      borderRadius: 6,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: { ...tooltipDefaults, callbacks: { label: ctx => ' ₹' + ctx.parsed.y.toLocaleString('en-IN') } }
+    },
+    scales: {
+      x: { grid: { color: GRID }, ticks: { color: MUTED } },
+      y: { grid: { color: GRID }, ticks: { color: MUTED, callback: v => '₹' + (v/1000).toFixed(0) + 'k' } }
+    }
+  }
+});
+
+// ── Category Donut ───────────────────────────────────────
+new Chart(document.getElementById('catDonut'), {
+  type: 'doughnut',
+  data: {
+    labels: ['Single Origin', 'Equipment', 'Subscription', 'Blend', 'Ready-to-Drink', 'Others'],
+    datasets: [{
+      data: [497497, 288356, 259852, 177593, 170779, 170540],
+      backgroundColor: [ACCENT, BLUE, GREEN, PURPLE, YELLOW, RED],
+      borderWidth: 2,
+      borderColor: '#1e2330',
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    cutout: '68%',
+    plugins: {
+      legend: { display: false },
+      tooltip: { ...tooltipDefaults, callbacks: { label: ctx => ' ₹' + ctx.parsed.toLocaleString('en-IN') } }
+    }
+  }
+});
+
+// ── Day of Week ──────────────────────────────────────────
+new Chart(document.getElementById('dowChart'), {
+  type: 'bar',
+  data: {
+    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+    datasets: [{
+      label: 'Revenue (₹)',
+      data: [223540, 212655, 198580, 192672, 290072, 211320, 235777],
+      backgroundColor: (ctx) => ctx.parsed.x === 4 ? ACCENT : 'rgba(79,142,247,0.6)',
+      borderRadius: 5,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: { ...tooltipDefaults, callbacks: { label: ctx => ' ₹' + ctx.parsed.y.toLocaleString('en-IN') } }
+    },
+    scales: {
+      x: { grid: { color: GRID }, ticks: { color: MUTED } },
+      y: { grid: { color: GRID }, ticks: { color: MUTED, callback: v => '₹' + (v/1000).toFixed(0) + 'k' } }
+    }
+  }
+});
+
+// ── Product Margin Horizontal Bar ─────────────────────────
+new Chart(document.getElementById('marginChart'), {
+  type: 'bar',
+  data: {
+    labels: [
+      'Ltd Ed. Geisha','Iced Coffee Sachets','Cold Brew Conc.',
+      'Espresso Caps.','Matcha Latte Mix','Monsoon Malabar',
+      'Ethiopian Yirg.','Hazelnut Flavor.','Colombian Supr.',
+      'Dark Roast Res.','House Blend','Decaf Smooth',
+      'Subscription Box','French Press','Pour Over Kit'
+    ],
+    datasets: [{
+      label: 'Margin %',
+      data: [78.3,72.4,71.6,68.4,65.2,64.9,62.0,61.7,58.5,57.8,54.3,52.1,48.2,32.5,28.9],
+      backgroundColor: (ctx) => {
+        const v = ctx.parsed.x;
+        return v >= 65 ? GREEN : v >= 50 ? YELLOW : RED;
+      },
+      borderRadius: 4,
+    }]
+  },
+  options: {
+    indexAxis: 'y',
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: { ...tooltipDefaults, callbacks: { label: ctx => ' ' + ctx.parsed.x + '%' } }
+    },
+    scales: {
+      x: { grid: { color: GRID }, ticks: { color: MUTED, callback: v => v + '%' }, max: 85 },
+      y: { grid: { color: GRID }, ticks: { color: MUTED, font: { size: 11 } } }
+    }
+  }
+});
+
+// ── Marketing ROI Chart ──────────────────────────────────
+new Chart(document.getElementById('roiChart'), {
+  type: 'bar',
+  data: {
+    labels: [
+      'Email NL Q1','Campus Drive','WhatsApp BC',
+      'YT Review Spon.','LinkedIn B2B','New Year Fest',
+      'Monsoon Launch','Referral Boost',
+      'Influencer May','Podcast Spon.'
+    ],
+    datasets: [{
+      label: 'ROI %',
+      data: [7590, 7394, 3454, 2800, 1933, 1735, 1683, 1194, -81.6, -99.4],
+      backgroundColor: (ctx) => ctx.parsed.y >= 0 ? GREEN : RED,
+      borderRadius: 5,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: { ...tooltipDefaults, callbacks: { label: ctx => ' ROI: ' + ctx.parsed.y.toLocaleString() + '%' } }
+    },
+    scales: {
+      x: { grid: { color: GRID }, ticks: { color: MUTED, font: { size: 10 } } },
+      y: { grid: { color: GRID }, ticks: { color: MUTED, callback: v => v + '%' } }
+    }
+  }
+});
+
+// ── Marketing Spend vs Revenue ───────────────────────────
+new Chart(document.getElementById('mktSpendChart'), {
+  type: 'bar',
+  data: {
+    labels: ['Email NL Q1','Campus Drive','New Year Fest','WhatsApp BC','Referral Boost','Instagram Reels','Cold Brew Blast','Podcast Spon.'],
+    datasets: [
+      {
+        label: 'Spend (₹)',
+        data: [29550, 36568, 170850, 54955, 85006, 96243, 110354, 175000],
+        backgroundColor: 'rgba(79,142,247,0.7)',
+        borderRadius: 4,
+      },
+      {
+        label: 'Revenue (₹)',
+        data: [2272494, 2740335, 3135132, 1953160, 1100000, 659869, 512304, 1100],
+        backgroundColor: 'rgba(62,207,142,0.7)',
+        borderRadius: 4,
+      }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: { labels: { color: MUTED, boxWidth: 12, padding: 14 } },
+      tooltip: { ...tooltipDefaults, callbacks: { label: ctx => ' ₹' + ctx.parsed.y.toLocaleString('en-IN') } }
+    },
+    scales: {
+      x: { grid: { color: GRID }, ticks: { color: MUTED, font: { size: 10 } } },
+      y: { grid: { color: GRID }, ticks: { color: MUTED, callback: v => '₹' + (v/100000).toFixed(1) + 'L' } }
+    }
+  }
+});
+
+// ── Support Tickets Chart ────────────────────────────────
+new Chart(document.getElementById('ticketChart'), {
+  type: 'doughnut',
+  data: {
+    labels: ['Delivery Delay', 'Refund Request', 'Payment Failed', 'Quality Issue', 'Wrong Item', 'Sub. Cancel', 'Other'],
+    datasets: [{
+      data: [42, 41, 30, 29, 23, 22, 33],
+      backgroundColor: [RED, YELLOW, ACCENT, BLUE, PURPLE, GREEN, MUTED],
+      borderWidth: 2,
+      borderColor: '#1e2330',
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    cutout: '60%',
+    plugins: {
+      legend: { display: false },
+      tooltip: { ...tooltipDefaults }
+    }
+  }
+});
+
+// ── Website Traffic Chart ────────────────────────────────
+new Chart(document.getElementById('trafficChart'), {
+  type: 'bar',
+  data: {
+    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+    datasets: [
+      {
+        type: 'bar',
+        label: 'Sessions',
+        data: [68678, 65952, 41087, 63264, 48949, 114230],
+        backgroundColor: 'rgba(79,142,247,0.5)',
+        borderRadius: 5,
+        yAxisID: 'y',
+      },
+      {
+        type: 'line',
+        label: 'Conversion %',
+        data: [2.52, 4.22, 2.87, 3.82, 2.61, 2.52],
+        borderColor: GREEN,
+        backgroundColor: 'transparent',
+        borderWidth: 2,
+        tension: 0.4,
+        pointBackgroundColor: GREEN,
+        pointRadius: 4,
+        yAxisID: 'y2',
+      }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: { labels: { color: MUTED, boxWidth: 12, padding: 14 } },
+      tooltip: { ...tooltipDefaults }
+    },
+    scales: {
+      x:  { grid: { color: GRID }, ticks: { color: MUTED } },
+      y:  { grid: { color: GRID }, ticks: { color: MUTED }, position: 'left' },
+      y2: { grid: { display: false }, ticks: { color: GREEN, callback: v => v + '%' }, position: 'right' }
+    }
+  }
+});
+
+// ── Dept Salary Chart ─────────────────────────────────────
+new Chart(document.getElementById('salaryChart'), {
+  type: 'bar',
+  data: {
+    labels: ['Eng', 'Product', 'Finance', 'Mktg', 'HR', 'Sales', 'Ops'],
+    datasets: [{
+      label: 'Avg Monthly Salary (₹)',
+      data: [147941, 122114, 113404, 109158, 90048, 83609, 74740],
+      backgroundColor: [GREEN, BLUE, YELLOW, PURPLE, ACCENT, ACCENT2, MUTED],
+      borderRadius: 5,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: { ...tooltipDefaults, callbacks: { label: ctx => ' ₹' + ctx.parsed.y.toLocaleString('en-IN') } }
+    },
+    scales: {
+      x: { grid: { color: GRID }, ticks: { color: MUTED } },
+      y: { grid: { color: GRID }, ticks: { color: MUTED, callback: v => '₹' + (v/1000).toFixed(0) + 'k' } }
+    }
+  }
+});
+
+// ── Invoice Status Donut ──────────────────────────────────
+new Chart(document.getElementById('invoiceDonut'), {
+  type: 'doughnut',
+  data: {
+    labels: ['Paid', 'Pending', 'Overdue'],
+    datasets: [{
+      data: [20742552, 5782870, 5100912],
+      backgroundColor: [GREEN, YELLOW, RED],
+      borderWidth: 2,
+      borderColor: '#1e2330',
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    cutout: '65%',
+    plugins: {
+      legend: { labels: { color: MUTED, boxWidth: 10, padding: 14 } },
+      tooltip: { ...tooltipDefaults, callbacks: { label: ctx => ' ₹' + ctx.parsed.toLocaleString('en-IN') } }
+    }
+  }
+});
+</script>
+</body>
+</html>
